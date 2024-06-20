@@ -1,29 +1,41 @@
 const express = require("express");
 const mongoose = require("mongoose");
-require("dotenv").config();
+const session = require("express-session");
+const dotenv = require("dotenv");
 const userRoute = require("./routes/user");
 
-// settings
+dotenv.config();
 const app = express();
 const port = process.env.PORT || 9000;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-// middlewares
+// Configuración de express-session
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'miSecreto',
+  resave: false,
+  saveUninitialized: true
+}));
+
+// Middleware para manejar el cuerpo de las peticiones JSON
 app.use(express.json());
+
+// Middleware de las rutas de usuario
 app.use("/api", userRoute);
 
-// routes
+// Ruta de prueba para verificar que el servidor está funcionando
 app.get("/", (req, res) => {
-  res.send("Welcome to my API");
+  res.send("Bienvenido a mi API");
 });
 
-// mongodb connection
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("Connected to MongoDB Atlas"))
-  .catch((error) => console.error(error));
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("Conectado a MongoDB Atlas"))
+.catch((error) => console.error(error));
 
-// server listening
-app.listen(port, () => console.log("Server listening to", port));
+// Iniciar el servidor
+app.listen(port, () => {
+  console.log(`Servidor escuchando en el puerto ${port}`);
+});
